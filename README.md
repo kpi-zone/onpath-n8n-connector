@@ -1,8 +1,8 @@
-# n8n-nodes-kpi-canvas
+# onpath-n8n-connector
 
-An [n8n](https://n8n.io) community node that pushes KPI values into [Canvas Creation Studio](https://github.com/your-org/canvas-creation-studio) via the KPI Import API.
+An [n8n](https://n8n.io) community node that pushes KPI values into [onpath studio](https://www.kpi.zone) via the KPI Import API.
 
-Requires a **Pro subscription** on Canvas Creation Studio.
+Requires a **Pro subscription** on onpath Studio.
 
 ---
 
@@ -36,7 +36,7 @@ Requires a **Pro subscription** on Canvas Creation Studio.
 
 ```bash
 # 1. Enter the package directory
-cd n8n-nodes-kpi-canvas
+cd onpath-n8n-connector
 
 # 2. Install dependencies
 npm install
@@ -75,13 +75,13 @@ Use this during development to test the node before publishing.
 
 ```bash
 # 1. Inside this package — build and create a global symlink
-cd n8n-nodes-kpi-canvas
+cd onpath-n8n-connector
 npm run build
 npm link
 
 # 2. Inside your n8n data directory (usually ~/.n8n)
 cd ~/.n8n
-npm link n8n-nodes-kpi-canvas
+npm link onpath-n8n-connector
 
 # 3. Restart n8n
 n8n start
@@ -94,7 +94,7 @@ Changes to the source only require a rebuild (`npm run build`) and an n8n restar
 ```bash
 # Inside your n8n data directory
 cd ~/.n8n
-npm install /absolute/path/to/n8n-nodes-kpi-canvas
+npm install /absolute/path/to/onpath-n8n-connector
 
 # Restart n8n
 n8n start
@@ -111,8 +111,8 @@ services:
     environment:
       - N8N_CUSTOM_EXTENSIONS=/home/node/.n8n/custom
     volumes:
-      - ./n8n-nodes-kpi-canvas/dist:/home/node/.n8n/custom/node_modules/n8n-nodes-kpi-canvas/dist
-      - ./n8n-nodes-kpi-canvas/package.json:/home/node/.n8n/custom/node_modules/n8n-nodes-kpi-canvas/package.json
+      - ./n8n-nodes-kpi-canvas/dist:/home/node/.n8n/custom/node_modules/onpath-n8n-connector/dist
+      - ./n8n-nodes-kpi-canvas/package.json:/home/node/.n8n/custom/node_modules/onpath-n8n-connector/package.json
 ```
 
 ---
@@ -165,14 +165,14 @@ npm publish --access public
 
 1. Open n8n → **Settings → Community Nodes**
 2. Click **Install**
-3. Enter `n8n-nodes-kpi-canvas`
+3. Enter `onpath-n8n-connector`
 4. Click **Install** and restart n8n when prompted
 
 ### Via CLI
 
 ```bash
 cd ~/.n8n
-npm install n8n-nodes-kpi-canvas
+npm install onpath-n8n-connector
 # Restart n8n
 ```
 
@@ -188,7 +188,7 @@ npm install n8n-nodes-kpi-canvas
 
 | Field | Value |
 | --- | --- |
-| **API Key** | Your `kpi_...` key — generate it in Canvas Creation Studio → Profile → API Key |
+| **API Key** | Your `kpi_...` key — generate it in onpath Studio → Profile → API Key |
 | **Base URL** | `https://vyhsvdbdbbnstusvziin.supabase.co/functions/v1` (default, leave unless self-hosting) |
 
 > The API key is shown **once** when generated and never retrievable again. Store it in n8n credentials immediately after generation.
@@ -234,14 +234,6 @@ Use **Batch** mode when an upstream node produces multiple rows (e.g. a database
   { "canvas_external_id": "sales-2026", "element_slug": "revenue-q1", "value": 125000 },
   { "canvas_external_id": "sales-2026", "element_slug": "churn-rate",  "value": 2.4 }
 ]
-```
-
-**Example workflow:**
-
-```text
-Schedule trigger (hourly)
-  → Postgres (SELECT canvas_external_id, element_slug, value FROM kpi_export_view)
-  → KPI Canvas [Batch]
 ```
 
 ---
