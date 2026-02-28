@@ -1,0 +1,46 @@
+{
+  "name": "n8n-nodes-kpi-canvas",
+  "version": "0.1.0",
+  "description": "n8n community node — push KPI values into onPATH Studio via the KPI Import API",
+  "keywords": [
+    "n8n-community-node-package",
+    "kpi",
+    "canvas",
+    "analytics"
+  ],
+  "license": "MIT",
+  "author": "",
+  "homepage": "https://github.com/your-org/n8n-nodes-kpi-canvas",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/n8n-nodes-kpi-canvas"
+  },
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && node scripts/copy-icons.mjs",
+    "dev": "tsc --watch",
+    "lint": "eslint nodes credentials --ext .ts",
+    "lintfix": "eslint nodes credentials --ext .ts --fix",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/KpiCanvasApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/KpiCanvas/KpiCanvas.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "n8n-workflow": "*",
+    "typescript": "^5.4.0"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}
