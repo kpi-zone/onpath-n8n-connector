@@ -1,7 +1,7 @@
 {
   "name": "n8n-nodes-kpi-canvas",
   "version": "0.1.0",
-  "description": "n8n community node — push KPI values into onPATH Studio via the KPI Import API",
+  "description": "n8n community node — push KPI values into onPATH Studio",
   "keywords": [
     "n8n-community-node-package",
     "kpi",
@@ -10,10 +10,10 @@
   ],
   "license": "MIT",
   "author": "",
-  "homepage": "https://github.com/your-org/n8n-nodes-kpi-canvas",
+  "homepage": "https://github.com/kpi-zone/onpath-n8n-connector",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org/n8n-nodes-kpi-canvas"
+    "url": "https://github.com/kpi-zone/onpath-n8n-connector.git"
   },
   "main": "index.js",
   "scripts": {
