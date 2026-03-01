@@ -1,5 +1,5 @@
 {
-  "name": "onpath-n8n-connector",
+  "name": "n8n-nodes-onpath",
   "version": "0.1.0",
   "description": "n8n community node — push KPI values into onPATH Studio",
   "keywords": [
