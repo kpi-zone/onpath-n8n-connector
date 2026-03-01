@@ -123,7 +123,7 @@ export class KpiCanvas implements INodeType {
     const credentials = await this.getCredentials('kpiCanvasApi');
 
     const baseUrl = (credentials.baseUrl as string).replace(/\/$/, '');
-    const apiKey = (credentials.apiKey as string).trim(); // Cleaned up
+    const apiKey = (credentials.apiKey as string).trim();
 
     if (!apiKey) {
       throw new NodeOperationError(this.getNode(), 'API key is not set in the credentials.');
@@ -172,7 +172,8 @@ export class KpiCanvas implements INodeType {
         });
       } catch (err) {
         if (this.continueOnFail()) {
-          returnData.push({ json: { error: err.message }, pairedItem: { item: i } });
+          const errorMessage = err instanceof Error ? err.message : String(err);
+          returnData.push({ json: { error: errorMessage }, pairedItem: { item: i } });
           continue;
         }
         throw err;
