@@ -3,7 +3,7 @@ import { ICredentialType, INodeProperties } from 'n8n-workflow';
 export class KpiCanvasApi implements ICredentialType {
 	name = 'kpiCanvasApi';
 	displayName = 'KPI Canvas API';
-	documentationUrl = 'https://github.com/your-org/n8n-nodes-kpi-canvas';
+	documentationUrl = 'https://github.com/kpi-zone/onpath-n8n-connector';
 
 	properties: INodeProperties[] = [
 		{
