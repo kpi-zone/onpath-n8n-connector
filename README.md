@@ -64,6 +64,8 @@ npm install onpath-n8n-connector
 
 Add the **KPI Canvas** node to any workflow, select your credential, and choose a send mode.
 
+Each KPI element in onpath Studio has a unique **Reference ID** — a short system-generated slug (e.g. `swift-peak-3f9a`) visible in the element's properties panel under **External KPI Source**. This is the identifier used to route values to the correct element.
+
 ### Single mode
 
 Use **Single** mode when each workflow execution pushes one KPI value. All fields support n8n expressions, so you can map values directly from upstream nodes.
@@ -71,8 +73,7 @@ Use **Single** mode when each workflow execution pushes one KPI value. All field
 | Parameter | Example | Description |
 | --- | --- | --- |
 | **Send Mode** | `Single Item` | One API call per input item |
-| **Canvas External ID** | `sales-2026` | The `external_id` set in Canvas Settings |
-| **Element Slug** | `revenue-q1` | The `slug` set on the KPI element |
+| **Reference ID** | `swift-peak-3f9a` | The system-generated slug from the KPI element's **External KPI Source** section |
 | **Value** | `={{ $json.revenue }}` | Numeric value (expressions supported) |
 
 **Example workflow:**
@@ -80,7 +81,7 @@ Use **Single** mode when each workflow execution pushes one KPI value. All field
 ```text
 Schedule trigger (hourly)
   → HTTP Request (fetch revenue from your data source)
-  → KPI Canvas [Single] (canvas: "sales-2026", slug: "revenue-q1", value: {{ $json.revenue }})
+  → KPI Canvas [Single] (reference: "swift-peak-3f9a", value: {{ $json.revenue }})
 ```
 
 ---
@@ -89,19 +90,18 @@ Schedule trigger (hourly)
 
 Use **Batch** mode when an upstream node produces multiple rows (e.g. a database query returning several KPIs at once). All rows are sent in a single API call, which is more efficient and helps avoid rate limits.
 
-| Parameter | Default | Description |
+| Parameter | Default field name | Description |
 | --- | --- | --- |
-| **Send Mode** | `Batch` | One API call for all input items |
-| **Canvas External ID Field** | `canvas_external_id` | Field name in each item that holds the canvas key |
-| **Element Slug Field** | `element_slug` | Field name in each item that holds the element slug |
+| **Send Mode** | — | `Batch` |
+| **Reference ID Field** | `reference_id` | Field name in each item that holds the KPI Reference ID |
 | **Value Field** | `value` | Field name in each item that holds the numeric value |
 
 **Example input items:**
 
 ```json
 [
-  { "canvas_external_id": "sales-2026", "element_slug": "revenue-q1", "value": 125000 },
-  { "canvas_external_id": "sales-2026", "element_slug": "churn-rate",  "value": 2.4 }
+  { "reference_id": "swift-peak-3f9a", "value": 125000 },
+  { "reference_id": "amber-rain-7c2b", "value": 2.4 }
 ]
 ```
 
@@ -111,10 +111,10 @@ Use **Batch** mode when an upstream node produces multiple rows (e.g. a database
 
 | Status | Error message | What to do |
 | --- | --- | --- |
-| `401` | Invalid API key | Regenerate the API key in Profile settings and update the credential in n8n |
+| `401` | Authentication failed | Verify your API key and ensure the Reference ID belongs to your account |
 | `403` | Pro subscription required | Upgrade your onpath Studio account to Pro |
 | `429` | Rate limit exceeded (10 req/s) | Add a **Wait** node (1 s) before the KPI Canvas node, or switch to Batch mode |
-| `400` | Bad request: … | Check that all three fields are present and that `value` is a finite number |
+| `400` | Bad request: … | Check that `reference_id` is present and that `value` is a finite number |
 | `500` | Failed to store KPI value(s) | Transient database error — try again shortly |
 
 > **Tip:** Enable **Continue on Fail** on the node to route errors as output items instead of halting the workflow.
