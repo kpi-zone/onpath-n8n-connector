@@ -1,169 +1,36 @@
 # onpath-n8n-connector
 
-An [n8n](https://n8n.io) community node that pushes KPI values into [onpath studio](https://www.kpi.zone) via the KPI Import API.
+An [n8n](https://n8n.io) community node that pushes KPI values into [onpath Studio](https://www.kpi.zone) via the KPI Import API.
 
-Requires a **Pro subscription** on onpath Studio.
+> **Requires a Pro subscription on onpath Studio.**
 
 ---
 
 ## Table of contents
 
 - [Prerequisites](#prerequisites)
-- [Development setup](#development-setup)
-- [Build](#build)
-- [Install into a local n8n instance](#install-into-a-local-n8n-instance)
-- [Publish to npm](#publish-to-npm)
-- [Install from npm (end users)](#install-from-npm-end-users)
+- [Installation](#installation)
+- [Setup: Add the credential](#setup-add-the-credential)
 - [Usage](#usage)
-  - [1. Add the credential](#1-add-the-credential)
-  - [2. Configure the node — Single mode](#2-configure-the-node--single-mode)
-  - [3. Configure the node — Batch mode](#3-configure-the-node--batch-mode)
+  - [Single mode](#single-mode)
+  - [Batch mode](#batch-mode)
 - [Error reference](#error-reference)
 
 ---
 
 ## Prerequisites
 
-| Tool | Minimum version |
-| --- | --- |
-| Node.js | 18 |
-| npm | 9 |
-| n8n | 1.0.0 |
+- An active **n8n** instance (v1.0.0 or later)
+- An **onpath Studio Pro** account
+- An onpath Studio **API key** (generated in Profile → API Key)
 
 ---
 
-## Development setup
-
-```bash
-# 1. Enter the package directory
-cd onpath-n8n-connector
-
-# 2. Install dependencies
-npm install
-```
-
-The only runtime peer dependency is `n8n-workflow`, which n8n itself provides. All other dependencies are dev-only (TypeScript, type definitions).
-
----
-
-## Build
-
-```bash
-npm run build
-```
-
-This runs two steps in sequence:
-
-1. **`tsc`** — compiles all TypeScript in `credentials/` and `nodes/` into `dist/`
-2. **`node scripts/copy-icons.mjs`** — copies `.svg` icons alongside the compiled JS in `dist/`
-
-The `dist/` directory is what gets published to npm (`"files": ["dist"]` in `package.json`).
-
-To watch for changes during development:
-
-```bash
-npm run dev
-```
-
----
-
-## Install into a local n8n instance
-
-Use this during development to test the node before publishing.
-
-### Option A — npm link (recommended for active development)
-
-```bash
-# 1. Inside this package — build and create a global symlink
-cd onpath-n8n-connector
-npm run build
-npm link
-
-# 2. Inside your n8n data directory (usually ~/.n8n)
-cd ~/.n8n
-npm link onpath-n8n-connector
-
-# 3. Restart n8n
-n8n start
-```
-
-Changes to the source only require a rebuild (`npm run build`) and an n8n restart — no re-linking needed.
-
-### Option B — install from local path
-
-```bash
-# Inside your n8n data directory
-cd ~/.n8n
-npm install /absolute/path/to/onpath-n8n-connector
-
-# Restart n8n
-n8n start
-```
-
-### Option C — Docker / n8n self-hosted
-
-Mount the built package into the container and add it to `N8N_CUSTOM_EXTENSIONS`:
-
-```yaml
-# docker-compose.yml
-services:
-  n8n:
-    environment:
-      - N8N_CUSTOM_EXTENSIONS=/home/node/.n8n/custom
-    volumes:
-      - ./n8n-nodes-kpi-canvas/dist:/home/node/.n8n/custom/node_modules/onpath-n8n-connector/dist
-      - ./n8n-nodes-kpi-canvas/package.json:/home/node/.n8n/custom/node_modules/onpath-n8n-connector/package.json
-```
-
----
-
-## Publish to npm
-
-### First-time setup
-
-```bash
-# Create an npm account if you don't have one
-npm adduser
-
-# Verify you are logged in
-npm whoami
-```
-
-### Publish
-
-```bash
-cd n8n-nodes-kpi-canvas
-
-# 1. Build (also runs automatically via "prepublishOnly" script)
-npm run build
-
-# 2. Dry-run to verify what will be included
-npm publish --dry-run
-
-# 3. Publish publicly
-npm publish --access public
-```
-
-The `prepublishOnly` script runs `npm run build` automatically, so step 1 is only needed if you want to inspect `dist/` before publishing.
-
-### Update an existing release
-
-```bash
-# Bump the version (patch / minor / major)
-npm version patch   # 0.1.0 → 0.1.1
-npm version minor   # 0.1.0 → 0.2.0
-npm version major   # 0.1.0 → 1.0.0
-
-npm publish --access public
-```
-
----
-
-## Install from npm (end users)
+## Installation
 
 ### Via n8n UI (recommended)
 
-1. Open n8n → **Settings → Community Nodes**
+1. Open n8n and go to **Settings → Community Nodes**
 2. Click **Install**
 3. Enter `onpath-n8n-connector`
 4. Click **Install** and restart n8n when prompted
@@ -178,26 +45,28 @@ npm install onpath-n8n-connector
 
 ---
 
-## Usage
-
-### 1. Add the credential
+## Setup: Add the credential
 
 1. In n8n go to **Credentials → New Credential**
 2. Search for **KPI Canvas API**
-3. Fill in:
+3. Fill in the following fields:
 
 | Field | Value |
 | --- | --- |
 | **API Key** | Your `kpi_...` key — generate it in onpath Studio → Profile → API Key |
-| **Base URL** | `https://vyhsvdbdbbnstusvziin.supabase.co/functions/v1` (default, leave unless self-hosting) |
+| **Base URL** | `https://vyhsvdbdbbnstusvziin.supabase.co/functions/v1` (default — leave unchanged unless self-hosting) |
 
-> The API key is shown **once** when generated and never retrievable again. Store it in n8n credentials immediately after generation.
+> **Important:** The API key is shown **once** when generated and cannot be retrieved again. Copy it into n8n immediately after creation.
 
 ---
 
-### 2. Configure the node — Single mode
+## Usage
 
-Use **Single** mode when each workflow execution pushes one KPI value. The fields support n8n expressions so you can map values from upstream nodes.
+Add the **KPI Canvas** node to any workflow, select your credential, and choose a send mode.
+
+### Single mode
+
+Use **Single** mode when each workflow execution pushes one KPI value. All fields support n8n expressions, so you can map values directly from upstream nodes.
 
 | Parameter | Example | Description |
 | --- | --- | --- |
@@ -216,16 +85,16 @@ Schedule trigger (hourly)
 
 ---
 
-### 3. Configure the node — Batch mode
+### Batch mode
 
-Use **Batch** mode when an upstream node produces multiple rows (e.g. a database query returning several KPIs at once). All rows are sent in a single API call.
+Use **Batch** mode when an upstream node produces multiple rows (e.g. a database query returning several KPIs at once). All rows are sent in a single API call, which is more efficient and helps avoid rate limits.
 
 | Parameter | Default | Description |
 | --- | --- | --- |
 | **Send Mode** | `Batch` | One API call for all input items |
-| **Canvas External ID Field** | `canvas_external_id` | Name of the field in each item that holds the canvas key |
-| **Element Slug Field** | `element_slug` | Name of the field in each item that holds the element slug |
-| **Value Field** | `value` | Name of the field in each item that holds the numeric value |
+| **Canvas External ID Field** | `canvas_external_id` | Field name in each item that holds the canvas key |
+| **Element Slug Field** | `element_slug` | Field name in each item that holds the element slug |
+| **Value Field** | `value` | Field name in each item that holds the numeric value |
 
 **Example input items:**
 
@@ -240,12 +109,12 @@ Use **Batch** mode when an upstream node produces multiple rows (e.g. a database
 
 ## Error reference
 
-| Status | Node error message | What to do |
+| Status | Error message | What to do |
 | --- | --- | --- |
-| `401` | Invalid API key | Regenerate the API key in Profile settings and update the credential |
-| `403` | Pro subscription required | Upgrade the account to Pro |
+| `401` | Invalid API key | Regenerate the API key in Profile settings and update the credential in n8n |
+| `403` | Pro subscription required | Upgrade your onpath Studio account to Pro |
 | `429` | Rate limit exceeded (10 req/s) | Add a **Wait** node (1 s) before the KPI Canvas node, or switch to Batch mode |
-| `400` | Bad request: … | Check that all three fields are present and `value` is a finite number |
-| `500` | Failed to store KPI value(s) | Check Supabase logs — usually a transient DB error |
+| `400` | Bad request: … | Check that all three fields are present and that `value` is a finite number |
+| `500` | Failed to store KPI value(s) | Transient database error — try again shortly |
 
-Enable **Continue on Fail** on the node to route errors as output items instead of halting the workflow.
+> **Tip:** Enable **Continue on Fail** on the node to route errors as output items instead of halting the workflow.
