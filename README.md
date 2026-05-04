@@ -49,7 +49,7 @@ When you test the credential, the node calls `GET /kpi-ingest`. A successful res
 ```json
 {
   "authenticated": true,
-  "token_name": "Zapier Prod Key"
+  "token_name": "n8n Prod Key"
 }
 ```
 
