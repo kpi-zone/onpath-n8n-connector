@@ -1,3 +1,4 @@
+
 FROM n8nio/n8n:latest
 
 USER root
@@ -8,7 +9,7 @@ COPY --chown=node:node package.json /custom-node/onpath-n8n-connector/package.js
 
 # Install production dependencies for the custom node
 WORKDIR /custom-node/onpath-n8n-connector
-RUN npm install --production
+RUN npm install --ignore-scripts
 
 # Switch back to the n8n default user
 USER node
