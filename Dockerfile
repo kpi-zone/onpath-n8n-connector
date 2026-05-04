@@ -2,13 +2,14 @@ FROM n8nio/n8n:latest
 
 USER root
 
-# Place the custom node outside the n8n-data volume mount
-# so the host volume doesn't override it
-RUN mkdir -p /custom-node/node_modules/onpath
+# Copy only the essential files
+COPY --chown=node:node dist/        /custom-node/onpath-n8n-connector/dist/
+COPY --chown=node:node package.json /custom-node/onpath-n8n-connector/package.json
 
-COPY --chown=node:node dist/        /custom-node/node_modules/onpath/dist/
-COPY --chown=node:node package.json /custom-node/node_modules/onpath/package.json
+# Install the node globally so n8n can detect and load it automatically
+RUN cd /custom-node/onpath-n8n-connector && npm install -g .
 
-RUN chown -R node:node /custom-node
+# Fix permissions
+RUN chown -R node:node /home/node/.n8n
 
 USER node
