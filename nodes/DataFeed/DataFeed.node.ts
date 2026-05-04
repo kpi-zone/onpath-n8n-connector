@@ -48,16 +48,15 @@ const ONPATH_API_BASE_URL = "https://api.onpath.io/functions/v1";
 
 export class DataFeed implements INodeType {
   description: INodeTypeDescription = {
-    displayName: "Data Feed",
+    displayName: "onpath Data Feed",
     name: "dataFeed",
     icon: "file:onpath.png",
     group: ["output"],
     version: 2,
     subtitle:
       '={{$parameter["sendMode"] === "batch" ? "Batch upsert" : "Upsert · " + $parameter["feedSlug"]}}',
-    description:
-      "Push KPI values into Canvas Creation Studio. Requires a Pro subscription.",
-    defaults: { name: "Data Feed" },
+    description: "Push data into onpath.",
+    defaults: { name: "onpath Data Feed" },
     inputs: ["main"] as any,
     outputs: ["main"] as any,
     credentials: [
@@ -120,8 +119,7 @@ export class DataFeed implements INodeType {
         default: "slug",
         required: true,
         displayOptions: { show: { sendMode: ["batch"] } },
-        description:
-          "Name of the input field containing the feed slug.",
+        description: "Name of the input field containing the feed slug.",
       },
       {
         displayName: "Value Field",
@@ -153,8 +151,10 @@ export class DataFeed implements INodeType {
 
   methods = {
     loadOptions: {
-      async getFeeds(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-        const response = await this.helpers.httpRequestWithAuthentication.call(
+      async getFeeds(
+        this: ILoadOptionsFunctions,
+      ): Promise<INodePropertyOptions[]> {
+        const response = (await this.helpers.httpRequestWithAuthentication.call(
           this,
           "dataFeedApi",
           {
@@ -162,7 +162,7 @@ export class DataFeed implements INodeType {
             url: `${ONPATH_API_BASE_URL}/kpi-ingest/feeds`,
             json: true,
           },
-        ) as FeedListResponse;
+        )) as FeedListResponse;
 
         return (response.feeds ?? []).map((feed) => ({
           name: feed.name,
@@ -187,7 +187,7 @@ export class DataFeed implements INodeType {
         }
 
         try {
-          const response = await this.helpers.request({
+          const response = (await this.helpers.request({
             method: "GET",
             uri: `${ONPATH_API_BASE_URL}/kpi-ingest`,
             headers: {
@@ -195,7 +195,7 @@ export class DataFeed implements INodeType {
               Accept: "application/json",
             },
             json: true,
-          }) as AuthCheckResponse;
+          })) as AuthCheckResponse;
 
           if (response.authenticated !== true) {
             return {
@@ -204,9 +204,11 @@ export class DataFeed implements INodeType {
             };
           }
 
-          const tokenName = typeof response.token_name === "string" && response.token_name.trim().length > 0
-            ? response.token_name.trim()
-            : null;
+          const tokenName =
+            typeof response.token_name === "string" &&
+            response.token_name.trim().length > 0
+              ? response.token_name.trim()
+              : null;
 
           return {
             status: "OK",
@@ -215,7 +217,8 @@ export class DataFeed implements INodeType {
               : "Connection successful.",
           };
         } catch (error) {
-          const message = error instanceof Error ? error.message : String(error);
+          const message =
+            error instanceof Error ? error.message : String(error);
           return {
             status: "Error",
             message: `Connection failed: ${message}`,
@@ -238,25 +241,23 @@ export class DataFeed implements INodeType {
       const refField = this.getNodeParameter("referenceIdField", 0) as string;
       const valueField = this.getNodeParameter("valueField", 0) as string;
 
-      const payload: KpiItem[] = items.map((item: INodeExecutionData, idx: number) => {
-        const slug = item.json[refField];
-        const val = item.json[valueField];
+      const payload: KpiItem[] = items.map(
+        (item: INodeExecutionData, idx: number) => {
+          const slug = item.json[refField];
+          const val = item.json[valueField];
 
-        if (!slug || typeof slug !== "string") {
-          throw new NodeOperationError(
-            this.getNode(),
-            `Item ${idx}: field "${refField}" is missing or invalid.`,
-          );
-        }
+          if (!slug || typeof slug !== "string") {
+            throw new NodeOperationError(
+              this.getNode(),
+              `Item ${idx}: field "${refField}" is missing or invalid.`,
+            );
+          }
 
-        return { slug, value: Number(val) };
-      });
-
-      const response = await makeRequest.call(
-        this,
-        payload,
-        timeout,
+          return { slug, value: Number(val) };
+        },
       );
+
+      const response = await makeRequest.call(this, payload, timeout);
       return [this.helpers.returnJsonArray(response.data)];
     }
 
@@ -267,11 +268,7 @@ export class DataFeed implements INodeType {
         const value = this.getNodeParameter("value", i) as number;
 
         const payload: KpiItem = { slug: referenceId, value };
-        const response = await makeRequest.call(
-          this,
-          payload,
-          timeout,
-        );
+        const response = await makeRequest.call(this, payload, timeout);
 
         returnData.push({
           json: response.data[0] ?? { success: true, ...payload },
