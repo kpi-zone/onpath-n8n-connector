@@ -52,7 +52,7 @@ export class KpiCanvas implements INodeType {
     group: ["output"],
     version: 2,
     subtitle:
-      '={{$parameter["sendMode"] === "batch" ? "Batch upsert" : "Upsert KPI"}}',
+      '={{$parameter["sendMode"] === "batch" ? "Batch upsert" : "Upsert · " + $parameter["feedSlug"]}}',
     description:
       "Push KPI values into Canvas Creation Studio. Requires a Pro subscription.",
     defaults: { name: "KPI Canvas" },
@@ -89,28 +89,6 @@ export class KpiCanvas implements INodeType {
       },
       // ── Single mode fields ────────────────────────────────────────────────
       {
-        displayName: "Feed Source",
-        name: "feedSource",
-        type: "options",
-        noDataExpression: true,
-        options: [
-          {
-            name: "Select Assigned Feed",
-            value: "select",
-            description:
-              "Load feeds assigned to this API key from the KPI Ingest API",
-          },
-          {
-            name: "Enter Slug Manually",
-            value: "manual",
-            description:
-              "Manually enter a feed slug if you do not want to load options",
-          },
-        ],
-        default: "manual",
-        displayOptions: { show: { sendMode: ["single"] } },
-      },
-      {
         displayName: "Feed",
         name: "feedSlug",
         type: "options",
@@ -119,30 +97,9 @@ export class KpiCanvas implements INodeType {
         },
         default: "",
         required: true,
-        displayOptions: {
-          show: {
-            sendMode: ["single"],
-            feedSource: ["select"],
-          },
-        },
+        displayOptions: { show: { sendMode: ["single"] } },
         description:
           "Feed assigned to this API key. The selected feed's slug is sent to the KPI Ingest API.",
-      },
-      {
-        displayName: "Reference ID",
-        name: "referenceId",
-        type: "string",
-        default: "",
-        required: true,
-        displayOptions: {
-          show: {
-            sendMode: ["single"],
-            feedSource: ["manual"],
-          },
-        },
-        description:
-          "Manual feed slug entry. Use this if you do not want to select from the assigned feeds list.",
-        placeholder: "swift-peak-3f9a",
       },
       {
         displayName: "Value",
@@ -319,10 +276,7 @@ export class KpiCanvas implements INodeType {
     // Single Mode
     for (let i = 0; i < items.length; i++) {
       try {
-        const feedSource = this.getNodeParameter("feedSource", i, "manual") as string;
-        const referenceId = feedSource === "select"
-          ? this.getNodeParameter("feedSlug", i) as string
-          : this.getNodeParameter("referenceId", i) as string;
+        const referenceId = this.getNodeParameter("feedSlug", i) as string;
         const value = this.getNodeParameter("value", i) as number;
 
         const payload: KpiItem = { slug: referenceId, value };
