@@ -1,6 +1,6 @@
 # onpath-n8n-connector
 
-An [n8n](https://n8n.io) community node that pushes KPI values into [onpath Studio](https://www.kpi.zone) via the KPI Ingest API.
+An [n8n](https://n8n.io) community node that pushes KPI values into [onpath](https://app.onpath.io) via the KPI Ingest API.
 
 Requires a **Pro subscription** on onpath Studio.
 
