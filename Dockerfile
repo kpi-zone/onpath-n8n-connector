@@ -2,14 +2,13 @@ FROM n8nio/n8n:latest
 
 USER root
 
-# Copy only the essential files (no node_modules, no source)
-COPY --chown=node:node dist/        /custom-node/onpath-n8n-connector/dist/
-COPY --chown=node:node package.json /custom-node/onpath-n8n-connector/package.json
+# Place the custom node outside the n8n-data volume mount
+# so the host volume doesn't override it
+RUN mkdir -p /custom-node/node_modules/onpath
 
-# n8n uses pnpm internally — point to the correct store and install
-WORKDIR /usr/local/lib/node_modules/n8n
-RUN pnpm config set store-dir /home/runner/setup-pnpm/node_modules/.bin/store/v10 --global \
-    && pnpm install --save /custom-node/onpath-n8n-connector
+COPY --chown=node:node dist/        /custom-node/node_modules/onpath/dist/
+COPY --chown=node:node package.json /custom-node/node_modules/onpath/package.json
 
-# Switch back to the n8n default user
+RUN chown -R node:node /custom-node
+
 USER node
