@@ -79,13 +79,11 @@ Each ingest feed in onpath Studio has a unique slug (e.g. `swift-peak-3f9a`) and
 
 Use **Single** mode when each workflow execution pushes one KPI value. All fields support n8n expressions, so you can map values directly from upstream nodes.
 
-| Parameter        | Example                | Description                                                                      |
-| ---------------- | ---------------------- | -------------------------------------------------------------------------------- |
-| **Send Mode**    | `Single Item`          | One API call per input item                                                      |
-| **Feed Source**  | `Select Assigned Feed` | Load feeds assigned to the current API key, or switch to manual slug entry       |
-| **Feed**         | `Revenue Feed`         | Dropdown populated from `GET /kpi-ingest/feeds`                                  |
-| **Reference ID** | `swift-peak-3f9a`      | Manual feed slug entry when you choose **Enter Slug Manually**                   |
-| **Value**        | `={{ $json.revenue }}` | Numeric value (expressions supported)                                            |
+| Parameter      | Example                | Description                                     |
+| -------------- | ---------------------- | ----------------------------------------------- |
+| **Send Mode**  | `Single Item`          | One API call per input item                     |
+| **Feed**       | `Revenue Feed`         | Dropdown populated from `GET /kpi-ingest/feeds` |
+| **Value**      | `={{ $json.revenue }}` | Numeric value (expressions supported)           |
 
 **Example workflow:**
 
