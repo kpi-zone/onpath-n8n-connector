@@ -20,6 +20,10 @@ export class DataFeedApi implements ICredentialType {
       baseURL: ONPATH_API_BASE_URL,
       url: "/kpi-ingest",
       method: "GET" as const,
+      headers: {
+        "X-API-Key": "={{$credentials.apiKey}}",
+        Accept: "application/json",
+      },
     },
     rules: [
       {
