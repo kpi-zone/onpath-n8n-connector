@@ -29,10 +29,10 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/KpiCanvasApi.credentials.js"
+      "dist/credentials/DataFeedApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/KpiCanvas/KpiCanvas.node.js"
+      "dist/nodes/DataFeed/DataFeed.node.js"
     ]
   },
   "devDependencies": {

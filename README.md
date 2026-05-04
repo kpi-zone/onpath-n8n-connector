@@ -2,35 +2,168 @@
 
 An [n8n](https://n8n.io) community node that pushes KPI values into [onpath Studio](https://www.kpi.zone) via the KPI Ingest API.
 
-> **Requires a Pro subscription on onpath Studio.**
+Requires a **Pro subscription** on onpath Studio.
 
 ---
 
 ## Table of contents
 
 - [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Setup: Add the credential](#setup-add-the-credential)
+- [Development setup](#development-setup)
+- [Build](#build)
+- [Install into a local n8n instance](#install-into-a-local-n8n-instance)
+- [Publish to npm](#publish-to-npm)
+- [Install from npm (end users)](#install-from-npm-end-users)
 - [Usage](#usage)
-  - [Single mode](#single-mode)
-  - [Batch mode](#batch-mode)
+  - [1. Add the credential](#1-add-the-credential)
+  - [2. Configure the node — Single mode](#2-configure-the-node--single-mode)
+  - [3. Configure the node — Batch mode](#3-configure-the-node--batch-mode)
 - [Error reference](#error-reference)
 
 ---
 
 ## Prerequisites
 
-- An active **n8n** instance (v1.0.0 or later)
-- An **onpath Studio Pro** account
-- An onpath Studio **API key** (generated in Organization Settings → API Tokens)
+| Tool    | Minimum version |
+| ------- | --------------- |
+| Node.js | 18              |
+| npm     | 9               |
+| n8n     | 1.0.0           |
 
 ---
 
-## Installation
+## Development setup
+
+```bash
+# 1. Enter the package directory
+cd onpath-n8n-connector
+
+# 2. Install dependencies
+npm install
+```
+
+The only runtime peer dependency is `n8n-workflow`, which n8n itself provides. All other dependencies are dev-only (TypeScript, type definitions).
+
+---
+
+## Build
+
+```bash
+npm run build
+```
+
+This runs two steps in sequence:
+
+1. **`tsc`** — compiles all TypeScript in `credentials/` and `nodes/` into `dist/`
+2. **`node scripts/copy-icons.mjs`** — copies `.svg` icons alongside the compiled JS in `dist/`
+
+The `dist/` directory is what gets published to npm (`"files": ["dist"]` in `package.json`).
+
+To watch for changes during development:
+
+```bash
+npm run dev
+```
+
+---
+
+## Install into a local n8n instance
+
+Use this during development to test the node before publishing.
+
+### Option A — npm link (recommended for active development)
+
+```bash
+# 1. Inside this package — build and create a global symlink
+cd onpath-n8n-connector
+npm run build
+npm link
+
+# 2. Inside your n8n data directory (usually ~/.n8n)
+cd ~/.n8n
+npm link onpath-n8n-connector
+
+# 3. Restart n8n
+n8n start
+```
+
+Changes to the source only require a rebuild (`npm run build`) and an n8n restart — no re-linking needed.
+
+### Option B — install from local path
+
+```bash
+# Inside your n8n data directory
+cd ~/.n8n
+npm install /absolute/path/to/onpath-n8n-connector
+
+# Restart n8n
+n8n start
+```
+
+### Option C — Docker / n8n self-hosted
+
+Mount the built package into the container and add it to `N8N_CUSTOM_EXTENSIONS`:
+
+```yaml
+# docker-compose.yml
+services:
+  n8n:
+    environment:
+      - N8N_CUSTOM_EXTENSIONS=/home/node/.n8n/custom
+    volumes:
+      - ./n8n-nodes-kpi-canvas/dist:/home/node/.n8n/custom/node_modules/onpath-n8n-connector/dist
+      - ./n8n-nodes-kpi-canvas/package.json:/home/node/.n8n/custom/node_modules/onpath-n8n-connector/package.json
+```
+
+---
+
+## Publish to npm
+
+### First-time setup
+
+```bash
+# Create an npm account if you don't have one
+npm adduser
+
+# Verify you are logged in
+npm whoami
+```
+
+### Publish
+
+```bash
+cd n8n-nodes-kpi-canvas
+
+# 1. Build (also runs automatically via "prepublishOnly" script)
+npm run build
+
+# 2. Dry-run to verify what will be included
+npm publish --dry-run
+
+# 3. Publish publicly
+npm publish --access public
+```
+
+The `prepublishOnly` script runs `npm run build` automatically, so step 1 is only needed if you want to inspect `dist/` before publishing.
+
+### Update an existing release
+
+```bash
+# Bump the version (patch / minor / major)
+npm version patch   # 0.1.0 → 0.1.1
+npm version minor   # 0.1.0 → 0.2.0
+npm version major   # 0.1.0 → 1.0.0
+
+npm publish --access public
+```
+
+---
+
+## Install from npm (end users)
 
 ### Via n8n UI (recommended)
 
-1. Open n8n and go to **Settings → Community Nodes**
+1. Open n8n → **Settings → Community Nodes**
 2. Click **Install**
 3. Enter `onpath-n8n-connector`
 4. Click **Install** and restart n8n when prompted
@@ -45,20 +178,22 @@ npm install onpath-n8n-connector
 
 ---
 
-## Setup: Add the credential
+## Usage
+
+### 1. Add the credential
 
 1. In n8n go to **Credentials → New Credential**
-2. Search for **KPI Canvas API**
-3. Fill in the following fields:
+2. Search for **Data Feed API**
+3. Fill in:
 
-| Field        | Value                                                                                |
-| ------------ | ------------------------------------------------------------------------------------ |
+| Field        | Value                                                                     |
+| ------------ | ------------------------------------------------------------------------- |
 | **API Key**  | Your `kpi_...` key — generate it in onpath Studio → Organization Settings → API Tokens |
-| **Base URL** | `https://api.onpath.io/functions/v1` (default — leave unchanged unless self-hosting) |
+| **Base URL** | `https://api.onpath.io/functions/v1` (default, leave unless self-hosting) |
 
-> **Important:** The API key is shown **once** when generated and cannot be retrieved again. Copy it into n8n immediately after creation.
+> The API key is shown once when generated and never retrievable again. Store it in n8n credentials immediately after generation.
 
-When you test the credential, the node calls `GET /kpi-ingest`. A successful response includes the authenticated token name, for example:
+When you test the credential, the node calls `GET /kpi-ingest`. A successful response now includes the authenticated token name, for example:
 
 ```json
 {
@@ -69,41 +204,37 @@ When you test the credential, the node calls `GET /kpi-ingest`. A successful res
 
 ---
 
-## Usage
+### 2. Configure the node — Single mode
 
-Add the **KPI Canvas** node to any workflow, select your credential, and choose a send mode.
+Use **Single** mode when each workflow execution pushes one KPI value. Fields support n8n expressions so you can map values from upstream nodes.
 
-Each ingest feed in onpath Studio has a unique slug (e.g. `swift-peak-3f9a`) and must be assigned to the API token you use in n8n. The node can load these assigned feeds automatically from `GET /kpi-ingest/feeds`.
+| Parameter      | Example                | Description                                                                                |
+| -------------- | ---------------------- | ------------------------------------------------------------------------------------------ |
+| **Send Mode**  | `Single Item`          | One API call per input item                                                                |
+| **Feed**       | `Revenue Feed`         | Dropdown populated from `GET /kpi-ingest/feeds`; the selected feed's slug is sent to the API |
+| **Value**      | `={{ $json.revenue }}` | Numeric value to import (expressions supported)                                            |
 
-### Single mode
-
-Use **Single** mode when each workflow execution pushes one KPI value. All fields support n8n expressions, so you can map values directly from upstream nodes.
-
-| Parameter      | Example                | Description                                     |
-| -------------- | ---------------------- | ----------------------------------------------- |
-| **Send Mode**  | `Single Item`          | One API call per input item                     |
-| **Feed**       | `Revenue Feed`         | Dropdown populated from `GET /kpi-ingest/feeds` |
-| **Value**      | `={{ $json.revenue }}` | Numeric value (expressions supported)           |
+Only feeds assigned to the current API token appear in the dropdown.
 
 **Example workflow:**
 
 ```text
 Schedule trigger (hourly)
   → HTTP Request (fetch revenue from your data source)
-  → KPI Canvas [Single] (feed: "Revenue Feed", value: {{ $json.revenue }})
+  → Data Feed [Single] (feed: "Revenue Feed", value: {{ $json.revenue }})
 ```
 
 ---
 
-### Batch mode
+### 3. Configure the node — Batch mode
 
-Use **Batch** mode when an upstream node produces multiple rows (e.g. a database query returning several KPIs at once). All rows are sent in a single API call, which is more efficient and helps avoid rate limits.
+Use **Batch** mode when an upstream node produces multiple rows (e.g. a database query returning several KPIs at once). All rows are sent in a single API call.
 
-| Parameter      | Default field name | Description                                       |
-| -------------- | ------------------ | ------------------------------------------------- |
-| **Send Mode**  | —                  | `Batch`                                           |
-| **Slug Field** | `slug`             | Field name in each item that holds the feed slug  |
-| **Value Field** | `value`            | Field name in each item that holds the numeric value |
+| Parameter        | Default field name | Description                                          |
+| ---------------- | ------------------ | ---------------------------------------------------- |
+| **Send Mode**    | —                  | `Batch`                                              |
+| **Slug Field**   | `slug`             | Name of the input field containing the ingest feed slug |
+| **Value Field**  | `value`            | Name of the input field containing the numeric value |
 
 **Example input items:**
 
@@ -118,12 +249,12 @@ Use **Batch** mode when an upstream node produces multiple rows (e.g. a database
 
 ## Error reference
 
-| Status | Error message                  | What to do                                                                    |
+| Status | Node error message             | What to do                                                                    |
 | ------ | ------------------------------ | ----------------------------------------------------------------------------- |
 | `401`  | Authentication failed          | Verify your API key and ensure the selected feed slug is assigned to that token |
-| `403`  | Pro subscription required      | Upgrade your onpath Studio account to Pro                                     |
-| `429`  | Rate limit exceeded (10 req/s) | Add a **Wait** node (1 s) before the KPI Canvas node, or switch to Batch mode |
-| `400`  | Bad request: …                 | Check that `slug` is present and that `value` is a finite number              |
+| `403`  | Pro subscription required      | Upgrade the account to Pro                                                    |
+| `429`  | Rate limit exceeded (10 req/s) | Add a **Wait** node (1 s) before the Data Feed node, or switch to Batch mode |
+| `400`  | Bad request: …                 | Check that `slug` is present and `value` is a finite number                   |
 | `500`  | Failed to store KPI value(s)   | Transient database error — try again shortly                                  |
 
-> **Tip:** Enable **Continue on Fail** on the node to route errors as output items instead of halting the workflow.
+Enable **Continue on Fail** on the node to route errors as output items instead of halting the workflow.
