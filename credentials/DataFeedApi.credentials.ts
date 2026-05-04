@@ -25,16 +25,6 @@ export class DataFeedApi implements ICredentialType {
         Accept: "application/json",
       },
     },
-    rules: [
-      {
-        type: "responseSuccessBody" as const,
-        properties: {
-          key: "authenticated",
-          value: true,
-          message: "Connection succeeded but the API did not confirm authentication.",
-        },
-      },
-    ],
   };
 
   properties: INodeProperties[] = [
