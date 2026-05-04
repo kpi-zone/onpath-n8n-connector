@@ -8,12 +8,7 @@ Requires a **Pro subscription** on onpath Studio.
 
 ## Table of contents
 
-- [Prerequisites](#prerequisites)
-- [Development setup](#development-setup)
-- [Build](#build)
-- [Install into a local n8n instance](#install-into-a-local-n8n-instance)
-- [Publish to npm](#publish-to-npm)
-- [Install from npm (end users)](#install-from-npm-end-users)
+- [Install from npm](#install-from-npm-end-users)
 - [Usage](#usage)
   - [1. Add the credential](#1-add-the-credential)
   - [2. Configure the node — Single mode](#2-configure-the-node--single-mode)
@@ -22,159 +17,15 @@ Requires a **Pro subscription** on onpath Studio.
 
 ---
 
-## Prerequisites
 
-| Tool    | Minimum version |
-| ------- | --------------- |
-| Node.js | 18              |
-| npm     | 9               |
-| n8n     | 1.0.0           |
+## Install from npm 
 
----
-
-## Development setup
-
-```bash
-# 1. Enter the package directory
-cd onpath-n8n-connector
-
-# 2. Install dependencies
-npm install
-```
-
-The only runtime peer dependency is `n8n-workflow`, which n8n itself provides. All other dependencies are dev-only (TypeScript, type definitions).
-
----
-
-## Build
-
-```bash
-npm run build
-```
-
-This runs two steps in sequence:
-
-1. **`tsc`** — compiles all TypeScript in `credentials/` and `nodes/` into `dist/`
-2. **`node scripts/copy-icons.mjs`** — copies `.svg` icons alongside the compiled JS in `dist/`
-
-The `dist/` directory is what gets published to npm (`"files": ["dist"]` in `package.json`).
-
-To watch for changes during development:
-
-```bash
-npm run dev
-```
-
----
-
-## Install into a local n8n instance
-
-Use this during development to test the node before publishing.
-
-### Option A — npm link (recommended for active development)
-
-```bash
-# 1. Inside this package — build and create a global symlink
-cd onpath-n8n-connector
-npm run build
-npm link
-
-# 2. Inside your n8n data directory (usually ~/.n8n)
-cd ~/.n8n
-npm link onpath-n8n-connector
-
-# 3. Restart n8n
-n8n start
-```
-
-Changes to the source only require a rebuild (`npm run build`) and an n8n restart — no re-linking needed.
-
-### Option B — install from local path
-
-```bash
-# Inside your n8n data directory
-cd ~/.n8n
-npm install /absolute/path/to/onpath-n8n-connector
-
-# Restart n8n
-n8n start
-```
-
-### Option C — Docker / n8n self-hosted
-
-Mount the built package into the container and add it to `N8N_CUSTOM_EXTENSIONS`:
-
-```yaml
-# docker-compose.yml
-services:
-  n8n:
-    environment:
-      - N8N_CUSTOM_EXTENSIONS=/home/node/.n8n/custom
-    volumes:
-      - ./n8n-nodes-kpi-canvas/dist:/home/node/.n8n/custom/node_modules/onpath-n8n-connector/dist
-      - ./n8n-nodes-kpi-canvas/package.json:/home/node/.n8n/custom/node_modules/onpath-n8n-connector/package.json
-```
-
----
-
-## Publish to npm
-
-### First-time setup
-
-```bash
-# Create an npm account if you don't have one
-npm adduser
-
-# Verify you are logged in
-npm whoami
-```
-
-### Publish
-
-```bash
-cd n8n-nodes-kpi-canvas
-
-# 1. Build (also runs automatically via "prepublishOnly" script)
-npm run build
-
-# 2. Dry-run to verify what will be included
-npm publish --dry-run
-
-# 3. Publish publicly
-npm publish --access public
-```
-
-The `prepublishOnly` script runs `npm run build` automatically, so step 1 is only needed if you want to inspect `dist/` before publishing.
-
-### Update an existing release
-
-```bash
-# Bump the version (patch / minor / major)
-npm version patch   # 0.1.0 → 0.1.1
-npm version minor   # 0.1.0 → 0.2.0
-npm version major   # 0.1.0 → 1.0.0
-
-npm publish --access public
-```
-
----
-
-## Install from npm (end users)
-
-### Via n8n UI (recommended)
+### Via n8n UI
 
 1. Open n8n → **Settings → Community Nodes**
 2. Click **Install**
 3. Enter `onpath-n8n-connector`
 4. Click **Install** and restart n8n when prompted
-
-### Via CLI
-
-```bash
-cd ~/.n8n
-npm install onpath-n8n-connector
-# Restart n8n
-```
 
 ---
 

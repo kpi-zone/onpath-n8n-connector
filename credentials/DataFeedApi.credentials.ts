@@ -1,5 +1,7 @@
 import { ICredentialType, INodeProperties } from "n8n-workflow";
 
+const ONPATH_API_BASE_URL = "https://api.onpath.io/functions/v1";
+
 export class DataFeedApi implements ICredentialType {
   name = "dataFeedApi";
   displayName = "Data Feed API";
@@ -15,7 +17,7 @@ export class DataFeedApi implements ICredentialType {
   };
   test = {
     request: {
-      baseURL: "={{$credentials.baseUrl}}",
+      baseURL: ONPATH_API_BASE_URL,
       url: "/kpi-ingest",
       method: "GET" as const,
     },
@@ -41,13 +43,6 @@ export class DataFeedApi implements ICredentialType {
       placeholder: "kpi_...",
       description:
         "Your Data Feed API key. Generate one in Organization Settings → API Tokens.",
-    },
-    {
-      displayName: "Base URL",
-      name: "baseUrl",
-      type: "string",
-      default: "https://api.onpath.io/functions/v1",
-      description: "Base URL of the Data Feed API (Supabase Function URL).",
     },
   ];
 }

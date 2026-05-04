@@ -44,6 +44,8 @@ interface FeedListResponse {
   }>;
 }
 
+const ONPATH_API_BASE_URL = "https://api.onpath.io/functions/v1";
+
 export class DataFeed implements INodeType {
   description: INodeTypeDescription = {
     displayName: "Data Feed",
@@ -152,22 +154,12 @@ export class DataFeed implements INodeType {
   methods = {
     loadOptions: {
       async getFeeds(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-        const credentials = await this.getCredentials("dataFeedApi");
-        const baseUrl = String(credentials.baseUrl ?? "").replace(/\/$/, "");
-
-        if (!baseUrl) {
-          throw new NodeOperationError(
-            this.getNode(),
-            "Base URL is not set in the credentials.",
-          );
-        }
-
         const response = await this.helpers.httpRequestWithAuthentication.call(
           this,
           "dataFeedApi",
           {
             method: "GET",
-            url: `${baseUrl}/kpi-ingest/feeds`,
+            url: `${ONPATH_API_BASE_URL}/kpi-ingest/feeds`,
             json: true,
           },
         ) as FeedListResponse;
@@ -185,20 +177,19 @@ export class DataFeed implements INodeType {
         credential: ICredentialsDecrypted<ICredentialDataDecryptedObject>,
       ): Promise<INodeCredentialTestResult> {
         const credentialData = credential.data ?? {};
-        const baseUrl = String(credentialData.baseUrl ?? "").replace(/\/$/, "");
         const apiKey = String(credentialData.apiKey ?? "").trim();
 
-        if (!baseUrl || !apiKey) {
+        if (!apiKey) {
           return {
             status: "Error",
-            message: "Base URL and API Key are required.",
+            message: "API Key is required.",
           };
         }
 
         try {
           const response = await this.helpers.request({
             method: "GET",
-            uri: `${baseUrl}/kpi-ingest`,
+            uri: `${ONPATH_API_BASE_URL}/kpi-ingest`,
             headers: {
               "X-API-Key": apiKey,
               Accept: "application/json",
@@ -236,9 +227,6 @@ export class DataFeed implements INodeType {
 
   async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
     const items = this.getInputData();
-    const credentials = await this.getCredentials("dataFeedApi");
-
-    const baseUrl = (credentials.baseUrl as string).replace(/\/$/, "");
 
     const sendMode = this.getNodeParameter("sendMode", 0) as string;
     const options = this.getNodeParameter("options", 0) as { timeout?: number };
@@ -266,7 +254,6 @@ export class DataFeed implements INodeType {
 
       const response = await makeRequest.call(
         this,
-        baseUrl,
         payload,
         timeout,
       );
@@ -282,7 +269,6 @@ export class DataFeed implements INodeType {
         const payload: KpiItem = { slug: referenceId, value };
         const response = await makeRequest.call(
           this,
-          baseUrl,
           payload,
           timeout,
         );
@@ -310,13 +296,12 @@ export class DataFeed implements INodeType {
 
 async function makeRequest(
   this: IExecuteFunctions,
-  baseUrl: string,
   payload: KpiItem | KpiItem[],
   timeout: number,
 ): Promise<IngestResponse> {
   const requestOptions: IHttpRequestOptions = {
     method: "POST",
-    url: `${baseUrl}/kpi-ingest`,
+    url: `${ONPATH_API_BASE_URL}/kpi-ingest`,
     headers: { "Content-Type": "application/json" },
     body: payload,
     json: true,
